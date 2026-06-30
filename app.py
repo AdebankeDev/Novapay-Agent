@@ -12,21 +12,21 @@ from dotenv import load_dotenv
 from agents import Agent, Runner
 from pypdf import PdfReader
 
-load_dotenv()  # loads .env when running locallys
+load_dotenv()  # loads .env when running locally
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 1 — AGENT LOGIC
 # ══════════════════════════════════════════════════════════════════════════════
 
 # Wire OpenRouter to the openai-agents SDK via standard env vars.
-# The SDK reads OPENAI_API_KEY and OPENAI_BASE_URL automatically
+# The SDK reads OPENAI_API_KEY and OPENAI_BASE_URL automatically.
 os.environ["OPENAI_AGENTS_DISABLE_TRACING"] = "1"
 os.environ["OPENAI_API_KEY"] = os.getenv("API_TOKEN", "")
 os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
 
 if not os.environ["OPENAI_API_KEY"]:
     raise EnvironmentError(
-        "OPENROUTER_API_KEY is not set. "
+        "API_TOKEN is not set. "
         "Add it to your .env file (local) or HF Space Secrets (deployment)."
     )
 
@@ -92,14 +92,12 @@ async def run_agent(
     Returns:
         The assistant's reply as a plain string.
     """
-    # Build the agent — plain model string, SDK uses set_default_openai_client above
     novapay_agent = Agent(
         name="NovaPay Assistant",
         instructions=_build_system_prompt(company_context),
         model=MODEL,
     )
 
-    # Reconstruct full conversation: history turns + new user message
     input_messages: list[dict] = []
     for msg in history:
         if msg["role"] in ("user", "assistant"):
@@ -130,142 +128,113 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
   html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
   :root {
-    --bg:         #F3F5F8;
-    --surface:    #FFFFFF;
-    --card:       #FFFFFF;
-    --border:     #E2E7EF;
-    --ink:        #10151D;
-    --muted:      #6B7686;
-    --faint:      #98A2B3;
-    --blue:       #2451FF;
-    --blue-dim:   rgba(36,81,255,0.08);
-    --blue-ring:  rgba(36,81,255,0.18);
-    --mint:       #00C2A8;
-    --user-bg:    #10151D;
-    --user-text:  #F3F5F8;
+    --bg:        #060D1F;
+    --surface:   #0B1A30;
+    --card:      #0F2340;
+    --border:    #163354;
+    --teal:      #0ABFA3;
+    --teal-dim:  rgba(10, 191, 163, 0.10);
+    --teal-glow: rgba(10, 191, 163, 0.22);
+    --blue:      #1A6FD4;
+    --text:      #DDE8F5;
+    --muted:     #4D6E8A;
   }
 
-  .stApp { background-color: var(--bg); color: var(--ink); }
-  .block-container { padding: 1.4rem 1.2rem 1rem; max-width: 700px; }
+  .stApp { background-color: var(--bg); color: var(--text); }
+  .block-container { padding: 1.5rem 1.5rem 1rem; max-width: 720px; }
 
   /* ── top bar ── */
   .topbar {
-    display: flex; align-items: center; gap: 12px;
-    padding: 0.9rem 1.1rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    margin-bottom: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
   }
   .topbar-icon {
-    width: 38px; height: 38px; border-radius: 10px;
-    background: var(--ink);
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--teal), var(--blue));
     display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    font-size: 1.05rem; color: #fff; font-weight: 700; flex-shrink: 0;
   }
-  .topbar-icon svg { width: 18px; height: 18px; }
-  .topbar-name { font-family: 'Sora', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--ink); line-height: 1.2; }
-  .topbar-sub  { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .topbar-name { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+  .topbar-sub  { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
   .topbar-pill {
-    margin-left: auto; font-size: 0.7rem; font-weight: 600; color: var(--mint);
-    background: rgba(0,194,168,0.08);
-    border: 1px solid rgba(0,194,168,0.25); border-radius: 20px;
-    padding: 4px 10px 4px 8px; display: flex; align-items: center; gap: 6px;
-    white-space: nowrap;
+    margin-left: auto; font-size: 0.68rem; color: var(--teal);
+    border: 1px solid rgba(10, 191, 163, 0.35); border-radius: 20px;
+    padding: 3px 10px; display: flex; align-items: center; gap: 5px;
   }
   .pill-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--mint); animation: blink 2s infinite;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--teal); animation: blink 2s infinite;
   }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
   /* ── welcome greeting (shown on empty chat) ── */
-  .greeting { padding: 1.6rem 0.4rem 1.2rem; }
+  .greeting { text-align: center; padding: 1.8rem 1rem 1rem; }
   .greeting h2 {
-    font-family: 'Sora', sans-serif;
-    font-size: 1.5rem; font-weight: 700; color: var(--ink);
-    margin: 0 0 0.5rem; letter-spacing: -0.01em;
+    font-size: 1.3rem; font-weight: 700; color: var(--text);
+    margin: 0 0 0.4rem;
   }
   .greeting p {
-    font-size: 0.86rem; color: var(--muted);
-    margin: 0 0 1.3rem; line-height: 1.6; max-width: 480px;
+    font-size: 0.82rem; color: var(--muted);
+    margin: 0 0 1.4rem; line-height: 1.7;
   }
 
   /* ── suggestion chips ── */
   .chips-label {
-    font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--faint); margin-bottom: 0.6rem;
+    font-size: 0.68rem; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem;
   }
   div[data-testid="stButton"] > button {
     background: var(--card) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 12px !important;
-    color: var(--ink) !important;
-    font-size: 0.82rem !important;
-    font-weight: 500 !important;
-    text-align: left !important;
-    padding: 10px 14px !important;
+    border-radius: 20px !important;
+    color: var(--muted) !important;
+    font-size: 0.78rem !important;
+    font-weight: 400 !important;
+    padding: 6px 14px !important;
     white-space: normal !important;
     word-wrap: break-word !important;
     line-height: 1.35 !important;
-    min-height: 44px !important;
-    height: auto !important;
-    width: 100% !important;
-    box-shadow: none !important;
-    transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease !important;
+    transition: border-color 0.15s, color 0.15s, background 0.15s !important;
   }
   div[data-testid="stButton"] > button:hover {
-    border-color: var(--blue) !important;
-    background: var(--blue-dim) !important;
-    color: var(--blue) !important;
-    transform: translateY(-1px);
+    border-color: var(--teal) !important;
+    color: var(--teal) !important;
+    background: var(--teal-dim) !important;
   }
-  div[data-testid="stButton"] > button:active { transform: translateY(0); }
 
   /* ── chat messages ── */
   [data-testid="stChatMessage"] {
     background: var(--surface) !important;
     border: 1px solid var(--border) !important;
-    border-radius: 14px !important;
-    padding: 0.9rem 1.1rem !important;
-    margin-bottom: 0.6rem !important;
-    box-shadow: 0 1px 2px rgba(16,21,29,0.03);
-  }
-  [data-testid="stChatMessage"] p { color: var(--ink) !important; font-size: 0.9rem; line-height: 1.6; }
-
-  /* user bubble — darker, aligned visually distinct via avatar background */
-  [data-testid="stChatMessageAvatarUser"] {
-    background: var(--ink) !important;
-  }
-  [data-testid="stChatMessageAvatarAssistant"] {
-    background: linear-gradient(135deg, var(--blue), var(--mint)) !important;
+    border-radius: 12px !important;
+    padding: 0.85rem 1rem !important;
+    margin-bottom: 0.5rem !important;
   }
 
-  /* ── chat input ── */
+  /* ── chat input — bold and visible ── */
   [data-testid="stChatInputContainer"] {
-    background: var(--surface) !important;
-    border: 1.5px solid var(--border) !important;
+    background: var(--card) !important;
+    border: 2px solid var(--teal) !important;
     border-radius: 14px !important;
-    box-shadow: 0 2px 10px rgba(16,21,29,0.04) !important;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  }
-  [data-testid="stChatInputContainer"]:focus-within {
-    border-color: var(--blue) !important;
-    box-shadow: 0 0 0 4px var(--blue-ring) !important;
+    box-shadow: 0 0 18px var(--teal-glow) !important;
   }
   [data-testid="stChatInput"] textarea {
     background: transparent !important;
     border: none !important;
-    color: var(--ink) !important;
+    color: var(--text) !important;
     font-family: 'Inter', sans-serif !important;
     font-size: 0.9rem !important;
   }
-  [data-testid="stChatInput"] textarea::placeholder { color: var(--faint) !important; }
+  [data-testid="stChatInput"] textarea::placeholder { color: var(--muted) !important; }
 
   #MainMenu, footer, header { visibility: hidden; }
 </style>
@@ -274,13 +243,7 @@ st.markdown("""
 # ── Top bar ────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="topbar">
-  <div class="topbar-icon">
-    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 8.5C3 6 5 4 7.5 4H16.5C19 4 21 6 21 8.5V15.5C21 18 19 20 16.5 20H7.5C5 20 3 18 3 15.5V8.5Z" stroke="#F3F5F8" stroke-width="1.6"/>
-      <path d="M3 9.5H21" stroke="#F3F5F8" stroke-width="1.6"/>
-      <path d="M7 14.5H11" stroke="#00C2A8" stroke-width="1.6" stroke-linecap="round"/>
-    </svg>
-  </div>
+  <div class="topbar-icon">N</div>
   <div>
     <div class="topbar-name">NovaPay Assistant</div>
     <div class="topbar-sub">Powered by NovaPay Technologies</div>
@@ -311,9 +274,9 @@ if "pending_prompt" not in st.session_state:
 if not st.session_state.messages:
     st.markdown("""
     <div class="greeting">
-      <h2>Hi, how can I help you today?</h2>
-      <p>I'm the NovaPay AI Assistant. Ask me anything about our products, services,
-      pricing, or integrations — I'll answer straight from the NovaPay company profile.</p>
+      <h2>👋 Hi, how can I help you?</h2>
+      <p>I'm the NovaPay AI Assistant. Ask me anything about our<br>
+      products, services, pricing, or integrations.</p>
     </div>
     <div class="chips-label">Try asking</div>
     """, unsafe_allow_html=True)
@@ -327,8 +290,6 @@ if not st.session_state.messages:
         "What industries do you serve?",
     ]
 
-    # Two chips per row — fixed-width columns can't fit longer questions on one
-    # line, so each row only ever holds two suggestions and text wraps cleanly.
     for i in range(0, len(suggestions), 2):
         row = suggestions[i:i + 2]
         cols = st.columns(2)
@@ -338,7 +299,7 @@ if not st.session_state.messages:
                     st.session_state.pending_prompt = suggestion
                     st.rerun()
 
-    st.markdown("<div style='height:0.6rem'></div>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
 # ── Render chat history ────────────────────────────────────────────────────────
 for message in st.session_state.messages:
