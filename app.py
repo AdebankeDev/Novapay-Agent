@@ -1,15 +1,6 @@
 """
 app.py — NovaPay Technologies AI Assistant
 ==========================================
-Single-file app: agent logic (PDF loader, OpenRouter setup, openai-agents
-runner) + Streamlit UI all live here.
-
-Local dev:
-    streamlit run app.py
-
-Env vars needed:
-    OPENROUTER_API_KEY   — your OpenRouter key
-    OPENROUTER_MODEL     — e.g. "openai/gpt-4o-mini" (default)
 """
 
 import asyncio
@@ -21,15 +12,14 @@ from dotenv import load_dotenv
 from agents import Agent, Runner
 from pypdf import PdfReader
 
-load_dotenv()  # loads .env when running locally; no-op on HF Spaces
+load_dotenv()  # loads .env when running locallys
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SECTION 1 — AGENT LOGIC
 # ══════════════════════════════════════════════════════════════════════════════
 
 # Wire OpenRouter to the openai-agents SDK via standard env vars.
-# The SDK reads OPENAI_API_KEY and OPENAI_BASE_URL automatically —
-# no custom client or wrapper needed.
+# The SDK reads OPENAI_API_KEY and OPENAI_BASE_URL automatically
 os.environ["OPENAI_AGENTS_DISABLE_TRACING"] = "1"
 os.environ["OPENAI_API_KEY"] = os.getenv("API_TOKEN", "")
 os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
@@ -40,8 +30,6 @@ if not os.environ["OPENAI_API_KEY"]:
         "Add it to your .env file (local) or HF Space Secrets (deployment)."
     )
 
-# Model to use — swap via env var without touching code.
-# See https://openrouter.ai/models for available strings.
 MODEL = os.environ.get("OPENROUTER_MODEL", "openai/gpt-4o-mini")
 
 
