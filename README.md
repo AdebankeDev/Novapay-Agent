@@ -1,5 +1,4 @@
 ---
-
 title: NovaPay Assistant
 emoji: 💳
 colorFrom: green
@@ -8,7 +7,7 @@ sdk: docker
 app_port: 7860
 pinned: false
 license: mit
-------------
+---
 
 # 💳 NovaPay AI Assistant
 
